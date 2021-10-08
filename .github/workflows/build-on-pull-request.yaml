@@ -1,0 +1,57 @@
+name: Build on pull request to master or a feature branch
+
+on:
+  pull_request:
+    branches:
+      - master
+      - feature/*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    name: Build on pull request to master or a feature branch
+
+on:
+  pull_request:
+    branches:
+      - master
+      - feature/*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.4.1
+        with:
+          node-version: >=12.16
+          check-latest: true
+          cache: yarn
+          cache-dependency-path: yarn.lock
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        uses: borales/actions-yarn@v2.0.0
+        with:
+          cmd: install
+      - name: Lookup for circular dependencies
+        uses: borales/actions-yarn@v2.0.0
+        with:
+          cmd: test:circular
+      - name: Lint
+        uses: borales/actions-yarn@v2.0.0
+        with:
+          cmd: test:lint
+      - name: Perform type-checking
+        uses: borales/actions-yarn@v2.0.0
+        with:
+          cmd: test:lint
+      - name: Run tests
+        uses: borales/actions-yarn@v2.0.0
+        with:
+          cmd: test:unit
+      - name: Build
+        uses: borales/actions-yarn@v2.0.0
+        with:
+          cmd: build
