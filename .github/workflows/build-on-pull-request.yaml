@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: '--max-old-space-size=8192'
     steps:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.4.1
