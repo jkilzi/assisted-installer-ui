@@ -1,0 +1,90 @@
+name: Deploy to quay.io on push to specific branches
+
+on:
+  push:
+    branches:
+      - master
+      - features/*
+      - chores/*
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+      QUAY_IO_REGISTRY: quay.io/jkilzi
+      ASSISTED_UI_REPO: jkilzi/assisted-ui
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '12'
+
+      - name: Setup additional environment variables
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const normalized_branch_name = "${{github.ref_name}}".replaceAll('/','_').toLowerCase();
+            core.exportVariable('REACT_APP_VERSION', normalized_branch_name);
+            const short_sha = "${{github.sha}}".slice(0,8);
+            core.exportVariable('REACT_APP_GIT_SHA', short_sha);
+            const ui_lib_package_version = `0.0.0+sha.${short_sha}`;
+            core.exportVariable('UI_LIB_PACKAGE_VERSION', ui_lib_package_version);
+            core.exportVariable('UI_LIB_PACKAGE_NAME', `openshift-assisted-ui-lib-v${ui_lib_package_version}.tgz`)
+
+      - name: Checkout assisted-ui-lib
+        uses: actions/checkout@v3
+        with:
+          path: ./assisted-ui-lib
+
+      - name: Change the package version to ${{env.UI_LIB_PACKAGE_VERSION}}
+        run: >
+          node --eval="
+          const PKG_JSON_PATH = '${{github.workspace}}/assisted-ui-lib/package.json';
+          const pkg = require(PKG_JSON_PATH);
+          pkg.version = '${{env.UI_LIB_PACKAGE_VERSION}}';
+          fs.writeFileSync(PKG_JSON_PATH, JSON.stringify(pkg, null, 2));"
+
+      - name: Install deps, build and pack
+        working-directory: ./assisted-ui-lib
+        run: |
+          yarn install --frozen-lockfile
+          node scripts/esbuild/prod.js
+          yarn pack -f $GITHUB_WORKSPACE/$UI_LIB_PACKAGE_NAME
+
+      - name: Checkout assisted-ui
+        uses: actions/checkout@v3
+        with:
+          repository: ${{env.ASSISTED_UI_REPO}}
+          ref: ${{github.ref_name}}
+          path: ./assisted-ui
+
+      - name: Add latest openshift-assisted-ui-lib to assisted-ui
+        working-directory: ./assisted-ui
+        run: |  
+          mv $GITHUB_WORKSPACE/$UI_LIB_PACKAGE_NAME .
+          yarn add file:./$UI_LIB_PACKAGE_NAME
+
+      - name: Build the assisted-ui image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: assisted-installer-ui
+          tags: >
+            ${{env.REACT_APP_GIT_SHA}}
+            ${{env.REACT_APP_VERSION}}
+            latest
+          build-args: |
+            REACT_APP_GIT_SHA=${{env.REACT_APP_GIT_SHA}}
+            REACT_APP_VERSION=${{env.REACT_APP_VERSION}}
+          containerfiles: ./assisted-ui/Dockerfile
+          context: ./assisted-ui
+
+      - name: Push it to Quay.io
+        uses: redhat-actions/push-to-registry@v2.6
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: ${{ env.QUAY_IO_REGISTRY }}
+          username: ${{ secrets.QUAYIO_JKILZI_USERNAME }}
+          password: ${{ secrets.QUAYIO_JKILZI_PASSWORD }}
