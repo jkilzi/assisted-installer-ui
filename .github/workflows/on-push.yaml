@@ -1,4 +1,4 @@
-name: Deploy to quay.io on push to specific branches
+name: Push to Quay.io
 
 on:
   push:
@@ -8,42 +8,50 @@ on:
       - chores/*
 
 jobs:
-  deploy:
-    name: Deploy
+  main:
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max-old-space-size=8192
-      QUAY_IO_REGISTRY: quay.io/jkilzi
-      ASSISTED_UI_REPO: jkilzi/assisted-ui
+      GH_REPO_OWNER: jkilzi
+      QUAY_IO_REGISTRY_OWNER: jkilzi
     steps:
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '12'
-
-      - name: Setup additional environment variables
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const normalized_branch_name = "${{github.ref_name}}".replaceAll('/','_').toLowerCase();
-            core.exportVariable('REACT_APP_VERSION', normalized_branch_name);
-            const short_sha = "${{github.sha}}".slice(0,8);
-            core.exportVariable('REACT_APP_GIT_SHA', short_sha);
-            const ui_lib_package_version = `0.0.0+sha.${short_sha}`;
-            core.exportVariable('UI_LIB_PACKAGE_VERSION', ui_lib_package_version);
-            core.exportVariable('UI_LIB_PACKAGE_NAME', `openshift-assisted-ui-lib-v${ui_lib_package_version}.tgz`)
-
       - name: Checkout assisted-ui-lib
         uses: actions/checkout@v3
         with:
           path: ./assisted-ui-lib
 
-      - name: Change the package version to ${{env.UI_LIB_PACKAGE_VERSION}}
-        run: >
-          node --eval="
-          const PKG_JSON_PATH = '${{github.workspace}}/assisted-ui-lib/package.json';
-          const pkg = require(PKG_JSON_PATH);
-          pkg.version = '${{env.UI_LIB_PACKAGE_VERSION}}';
-          fs.writeFileSync(PKG_JSON_PATH, JSON.stringify(pkg, null, 2));"
+      - name: Checkout assisted-ui
+        # When pushing to a branch other than 'master', the same branch name must
+        # be defined in assisted-ui for this step to succeed.
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ env.GH_REPO_OWNER }}/assisted-ui
+          ref: ${{ github.ref_name }}
+          path: ./assisted-ui
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '12'
+          cache: yarn
+          cache-dependency-path: |
+            ./assisted-ui-lib/yarn.lock
+            ./assisted-ui/yarn.lock
+
+      - name: Define additional environment variables
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const normalized_branch_name = "${{ github.ref_name }}".replaceAll('/','_').toLowerCase();
+            core.exportVariable('REACT_APP_VERSION', normalized_branch_name);
+            const short_sha = "${{ github.sha }}".slice(0,8);
+            core.exportVariable('REACT_APP_GIT_SHA', short_sha);
+            const ui_lib_package_version = `0.0.0+sha.${short_sha}`;
+            core.exportVariable('UI_LIB_PACKAGE_VERSION', ui_lib_package_version);
+            core.exportVariable('UI_LIB_PACKAGE_NAME', `openshift-assisted-ui-lib-v${ui_lib_package_version}.tgz`)
+
+      - name: Change the package version in assisted-ui-lib to ${{ env.UI_LIB_PACKAGE_VERSION }}
+        run: |
+          node scripts/edit-package-version.js $GITHUB_WORKSPACE/assisted-ui-lib/package.json '$UI_LIB_PACKAGE_VERSION'
 
       - name: Install deps, build and pack
         working-directory: ./assisted-ui-lib
@@ -52,16 +60,9 @@ jobs:
           node scripts/esbuild/prod.js
           yarn pack -f $GITHUB_WORKSPACE/$UI_LIB_PACKAGE_NAME
 
-      - name: Checkout assisted-ui
-        uses: actions/checkout@v3
-        with:
-          repository: ${{env.ASSISTED_UI_REPO}}
-          ref: ${{github.ref_name}}
-          path: ./assisted-ui
-
       - name: Add generated openshift-assisted-ui-lib package to assisted-ui
         working-directory: ./assisted-ui
-        run: |  
+        run: |
           mv $GITHUB_WORKSPACE/$UI_LIB_PACKAGE_NAME .
           yarn add file:./$UI_LIB_PACKAGE_NAME
 
@@ -70,9 +71,9 @@ jobs:
         id: get-tags
         uses: actions/github-script@v6
         with:
-          script:
-            const tags = ['${{env.REACT_APP_GIT_SHA}}', '${{env.REACT_APP_VERSION}}'];
-            if ('${{github.ref_name}}' === 'master')
+          script: |
+            const tags = ['${{ env.REACT_APP_GIT_SHA }}', '${{ env.REACT_APP_VERSION }}'];
+            if ('${{ github.ref_name }}' === 'master')
               core.setOutput('tags', tags.concat('latest').join(' '));
             else
               core.setOutput('tags', tags.join(' '));
@@ -82,18 +83,20 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           image: assisted-installer-ui
-          tags: ${{steps.get-tags.outputs.tags}}
+          tags: ${{ steps.get-tags.outputs.tags }}
           build-args: |
-            REACT_APP_GIT_SHA=${{env.REACT_APP_GIT_SHA}}
-            REACT_APP_VERSION=${{env.REACT_APP_VERSION}}
+            REACT_APP_GIT_SHA=${{ env.REACT_APP_GIT_SHA }}
+            REACT_APP_VERSION=${{ env.REACT_APP_VERSION }}
           containerfiles: ./assisted-ui/Dockerfile
           context: ./assisted-ui
 
-      - name: Push it to Quay.io
+      - name: Push the assisted-ui image to Quay.io
         uses: redhat-actions/push-to-registry@v2.6
         with:
           image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}
-          registry: ${{ env.QUAY_IO_REGISTRY }}
+          registry: quay.io/${{ env.QUAY_IO_REGISTRY_OWNER }}
           username: ${{ secrets.QUAYIO_JKILZI_USERNAME }}
+          #username: ${{ secrets.QUAYIO_EDGE_INFRA_USERNAME }}
           password: ${{ secrets.QUAYIO_JKILZI_PASSWORD }}
+          #password: ${{ secrets.QUAYIO_EDGE_INFRA_PASSWORD }}
