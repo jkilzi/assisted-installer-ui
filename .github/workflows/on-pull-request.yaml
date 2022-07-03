@@ -1,7 +1,13 @@
-name: Test and build on pull requests to specific branches
+name: Test and build
 
 on:
   pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+      - edited
     branches:
       - master
       - releases/*
@@ -9,7 +15,6 @@ on:
 
 jobs:
   main:
-    name: Test and build
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max-old-space-size=8192
