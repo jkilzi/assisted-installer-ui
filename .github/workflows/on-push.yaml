@@ -67,7 +67,7 @@ jobs:
           mv $GITHUB_WORKSPACE/$UI_LIB_PACKAGE_NAME .
           yarn add file:./$UI_LIB_PACKAGE_NAME
 
-      - name: Get tags
+      - name: Get container image tags
         # Appends the 'latest' tag only if the commit was pushed to 'master'
         id: get-tags
         uses: actions/github-script@v6
