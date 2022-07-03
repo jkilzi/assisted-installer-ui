@@ -76,10 +76,12 @@ jobs:
         run: yarn publish --no-git-tag-version
 
   send_pr:
+    env:
+      WORKFLOW_PATH: .github/workflows/bump-openshift-assisted-ui-lib-in-assisted-ui.yaml
     needs: main
     runs-on: ubuntu-latest
     steps:
-      - uses: ${{ github.workspace }}/.github/workflows/bump-openshift-assisted-ui-lib-in-assisted-ui.yaml
+      - uses: ${{ github.workspace }}/${{ env.WORKFLOW_PATH }}
         with:
           assisted-ui-repo-url: ${{ needs.main.outputs.assisted-ui-repo-url }}
           new-version: ${{ needs.main.outputs.new-version }}
