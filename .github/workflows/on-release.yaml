@@ -72,7 +72,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPMJS_PUBLISH_TOKEN }}
         run: yarn publish --no-git-tag-version
 
-      - uses: .github/workflows/bump-openshift-assisted-ui-lib-in-assisted-ui.yaml
+      - uses: ./.github/workflows/bump-openshift-assisted-ui-lib-in-assisted-ui.yaml
         with:
           assisted-ui-repo-url: ${{ env.GH_REPO_OWNER }}/assisted-ui
           new-version: ${{ steps.new-version.outputs.new_version }}
