@@ -79,7 +79,7 @@ jobs:
     needs: main
     runs-on: ubuntu-latest
     steps:
-      - uses: .github/workflows/bump-openshift-assisted-ui-lib-in-assisted-ui.yaml
+      - uses: ${{ github.workspace }}/.github/workflows/bump-openshift-assisted-ui-lib-in-assisted-ui.yaml
         with:
           assisted-ui-repo-url: ${{ needs.main.outputs.assisted-ui-repo-url }}
           new-version: ${{ needs.main.outputs.new-version }}
