@@ -24,6 +24,8 @@ import { wizardStepNames } from '../clusterWizard/constants';
 import './ReviewCluster.css';
 import OpenShiftVersionDetail from '../clusterDetail/OpenShiftVersionDetail';
 import { useTranslation } from '../../../common/hooks/use-translation-wrapper';
+import EventsAPI from '../../services/apis/EventsAPI';
+import { ocmClient } from '../../api';
 
 const PlatformIntegrationNote = () => {
   return (
@@ -42,9 +44,26 @@ const PlatformIntegrationNote = () => {
   );
 };
 
+const CALLBACK_URL =
+  'https://email-svc-yoni-kilzi-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com/api/v1/notifications';
+
 const ReviewCluster = ({ cluster }: { cluster: Cluster }) => {
   const clusterWizardContext = useClusterWizardContext();
   const { t } = useTranslation();
+
+  React.useEffect(() => {
+    try {
+      if (!ocmClient) {
+        void EventsAPI.subscribe('cluster_installation_completed', cluster.id, CALLBACK_URL);
+        void EventsAPI.subscribe('cluster_installation_failed', cluster.id, CALLBACK_URL);
+        void EventsAPI.subscribe('cluster_installation_canceled', cluster.id, CALLBACK_URL);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <DetailList>
       <DetailItem

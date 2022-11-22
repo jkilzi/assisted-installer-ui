@@ -1,10 +1,40 @@
 import { EventList } from '../../../common';
 import { client } from '../../api';
 import { EventsAPIListOptions } from './types';
+import { AxiosResponse } from 'axios';
+
+interface EventSubscription {
+  // The subscription ID
+  id: string;
+  eventName: string;
+  clusterId: string;
+  // A callback URL
+  url: string;
+  //Status returned after calling the callback URL
+  status: string;
+}
+
+interface EventSubscriptionCreate {
+  eventName: string;
+  clusterId: string;
+  url: string;
+}
 
 const EventsAPI = {
   makeBaseURI() {
     return '/v2/events';
+  },
+
+  subscribe(eventName: string, clusterId: string, url: string) {
+    return client.post<
+      EventSubscription,
+      AxiosResponse<EventSubscription>,
+      EventSubscriptionCreate
+    >(`${EventsAPI.makeBaseURI()}/subscription`, {
+      eventName,
+      clusterId,
+      url,
+    });
   },
 
   list(options: EventsAPIListOptions) {

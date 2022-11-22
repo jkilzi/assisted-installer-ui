@@ -12,6 +12,9 @@ import { clusterStatusLabels } from '../../config';
 import './ClusterProgress.css';
 import { TFunction } from 'i18next';
 import { useTranslation } from '../../hooks/use-translation-wrapper';
+import PopoverIcon from '../ui/PopoverIcon';
+import Humanize from 'humanize-plus';
+import useInstallationEta from '../../hooks/useInstallationEta';
 
 const getProgressVariant = (status: Cluster['status']) => {
   switch (status) {
@@ -66,8 +69,12 @@ const ClusterProgress = ({
   minimizedView = false,
   totalPercentage,
 }: ClusterProgressProps) => {
+  const { highAvailabilityMode, /*openshiftVersion,*/ hosts } = cluster;
+  const hostsCount = hosts?.length ?? 0;
+  const eta = useInstallationEta({ highAvailabilityMode, /*openshiftVersion,*/ hostsCount });
   const { status } = cluster;
   const { t } = useTranslation();
+
   return (
     <>
       <DetailList>
@@ -79,6 +86,24 @@ const ClusterProgress = ({
               idPrefix="cluster-progress-started-on"
             />
           </FlexItem>
+          {eta > 0 && (
+            <FlexItem>
+              <DetailItem
+                title={
+                  <>
+                    Estimated installation duration{' '}
+                    <PopoverIcon
+                      bodyContent={
+                        'Based on the time it took to install clusters with similar characteristics.'
+                      }
+                    />
+                  </>
+                }
+                value={`${Humanize.toFixed(eta / 60, 2)} min approx.`}
+                idPrefix="cluster-progress-eta"
+              />
+            </FlexItem>
+          )}
           <FlexItem>
             <DetailItem
               title={t('ai:Status')}
