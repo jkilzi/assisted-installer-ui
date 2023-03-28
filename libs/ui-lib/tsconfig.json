@@ -1,0 +1,21 @@
+{
+  "extends": "@tsconfig/recommended/tsconfig.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "composite": true,
+    "declaration": true,
+    "declarationDir": "@types",
+    "declarationMap": true,
+    "incremental": true,
+    "jsx": "react",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "noEmit": false,
+    "noEmitOnError": true,
+    "outDir": "build",
+    "rootDir": "lib",
+    "sourceMap": true,
+    "tsBuildInfoFile": ".cache/tsconfig.tsbuildinfo"
+  },
+  "include": ["lib"]
+}
