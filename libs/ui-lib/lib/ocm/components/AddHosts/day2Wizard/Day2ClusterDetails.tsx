@@ -9,7 +9,6 @@ import {
   ErrorState,
   getSupportedCpuArchitectures,
   LoadingState,
-  SupportedCpuArchitecture,
   useFeature,
 } from '../../../../common';
 import { HostsNetworkConfigurationType, InfraEnvsService } from '../../../services';
@@ -76,6 +75,8 @@ const Day2ClusterDetails = () => {
         day2Cluster.id,
         day1CpuArchitecture,
       );
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       setInitialValues(initialValues);
     };
     void fetchAndSetInitialValues();
@@ -133,7 +134,7 @@ const Day2ClusterDetails = () => {
                 <GridItem span={12} lg={10} xl={9} xl2={7}>
                   <CpuArchitectureDropdown
                     openshiftVersion={day2Cluster.openshiftVersion}
-                    day1CpuArchitecture={initialValues.cpuArchitecture as SupportedCpuArchitecture}
+                    day1CpuArchitecture={initialValues.cpuArchitecture}
                     cpuArchitectures={cpuArchitectures}
                   />
                 </GridItem>

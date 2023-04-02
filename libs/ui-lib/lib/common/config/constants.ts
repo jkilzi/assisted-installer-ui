@@ -1,5 +1,4 @@
 import { TFunction } from 'i18next';
-import * as packageJson from '../../../package.json';
 import { ValidationsInfo, HostRole } from '../types/hosts';
 import { Cluster, ClusterValidationId, DiskRole, Event, HostValidationId } from '../api';
 import { ValidationGroup as ClusterValidationGroup } from '../types/clusters';
@@ -259,7 +258,7 @@ export const CLUSTER_DEFAULT_NETWORK_SETTINGS_IPV6 = {
   serviceNetworkCidr: '2003:db8::/112',
 };
 
-export const getAssistedUiLibVersion = () => packageJson.version;
+export const getAssistedUiLibVersion = () => process.env.AIUI_APP_VERSION;
 
 export const EVENT_SEVERITIES: Event['severity'][] = ['info', 'warning', 'error', 'critical'];
 
@@ -306,8 +305,8 @@ export const ExposedOperatorNames = [
   OPERATOR_NAME_LVMS,
 ];
 
-export type OperatorName = typeof OperatorNames[number];
-export type ExposedOperatorName = typeof ExposedOperatorNames[number];
+export type OperatorName = (typeof OperatorNames)[number];
+export type ExposedOperatorName = (typeof ExposedOperatorNames)[number];
 
 export const operatorLabelsCim = (
   t: TFunction,
