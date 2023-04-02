@@ -75,6 +75,14 @@ module.exports = {
       },
     },
   ],
+  parserOptions: {
+    project: [
+      'apps/*/tsconfig.json',
+      'apps/*/tsconfig.eslint.json',
+      'libs/*/tsconfig.json',
+      'libs/*/tsconfig.eslint.json',
+    ],
+  },
   root: true,
   rules: {
     eqeqeq: ['error', 'always'],
