@@ -40,6 +40,8 @@ export const getLimitedFeatureSupportLevels = (
   }
   for (const featureId of usedFeatureIds) {
     if (featureId in versionSupportLevels) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       const supportLevel: SupportLevel = versionSupportLevels[featureId] as SupportLevel;
       if (supportLevel === 'supported') {
         continue;
