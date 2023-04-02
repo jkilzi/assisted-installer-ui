@@ -78,9 +78,13 @@ export const NewFeatureSupportLevelProvider: React.FC<NewSupportLevelProviderPro
     ): SupportLevel | undefined => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       if (supportLevelDataNew) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return supportLevelDataNew ? (supportLevelDataNew[featureId] as SupportLevel) : undefined;
       } else {
         if (supportLevelData) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           return supportLevelData ? (supportLevelData[featureId] as SupportLevel) : undefined;
         }
       }
