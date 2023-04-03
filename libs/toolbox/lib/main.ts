@@ -9,19 +9,29 @@ async function main() {
   const cmd = argv._[0] as string | undefined;
   switch (cmd) {
     case 'watch': {
-      await watchTool({
-        ignored: argv.ignore as ChokidarWatchOptions['ignored'],
-        jobs: argv._.slice(1),
-        sourcesDir: argv.dir as string | readonly string[],
+      const ignored = argv.ignore as ChokidarWatchOptions['ignored'];
+      const jobs = argv._.slice(1);
+      const sourcesDir = argv.dir as string | readonly string[];
+      watchTool({
+        ignored,
+        jobs,
+        sourcesDir,
       });
       break;
     }
     case 'changed': {
-      const cmd = argv._.slice(1)[0] as string | undefined;
-      const dir = argv.dir as string;
-      const verbose = argv.verbose as boolean;
-      const excludePattern = argv.excludePattern as string | undefined;
-      await changedTool(dir, verbose, excludePattern, cmd);
+      const cmd = argv._.slice(1)[0] ?? 'echo';
+      const dir = (argv.dir as string) ?? '.';
+      const verbose = Boolean(argv.verbose);
+      const excludePattern = (argv.excludePattern as string) ?? '';
+      let commit = 'HEAD';
+      if (argv.commit) {
+        commit = argv.commit as string;
+      } else if (process.env.CI && process.env.TOOLBOX_COMMIT) {
+        commit = process.env.TOOLBOX_COMMIT;
+      }
+
+      await changedTool({ dir, verbose, excludePattern, commit, cmd });
       break;
     }
     default: {

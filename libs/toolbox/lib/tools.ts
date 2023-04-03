@@ -10,6 +10,7 @@ import {
   WAIT_MS,
 } from './constants.js';
 import type WatchToolOptions from './@types/watch-tool-options';
+import type ChangedToolOptions from './@types/changed-tool-options';
 import type Runnable from './@types/runnable.js';
 import type {
   ChokidarAllEventsListener,
@@ -17,7 +18,7 @@ import type {
 } from './@types/chokidar-type-aliases.js';
 import debounce from 'lodash-es/debounce.js';
 
-export async function watchTool(options: WatchToolOptions) {
+export function watchTool(options: WatchToolOptions) {
   const { ignored, jobs, sourcesDir } = options;
   const watcher = chokidar.watch(sourcesDir, {
     ignored,
@@ -37,7 +38,7 @@ export async function watchTool(options: WatchToolOptions) {
   const job = new JobsRunner(jobs);
   process.on('SIGINT', (job: Runnable, watcher: ChokidarFSWatcher) => {
     return (signal: string) => {
-      watcher.close().then(async () => {
+      void watcher.close().then(async () => {
         warn(`\n${signal} received. Stop watching files...`);
         if (job.isDone) {
           process.exit(EC_NORMAL);
@@ -70,15 +71,17 @@ export async function watchTool(options: WatchToolOptions) {
   watcher.on('all', handleChangeDebounced(job));
 }
 
-export async function changedTool(dir = '.', verbose = false, excludePattern = '', cmd?: string) {
+export async function changedTool(options: ChangedToolOptions) {
+  const { commit, dir, verbose, excludePattern, cmd } = options;
   $.verbose = verbose;
-  const result = await $`git --no-pager diff --name-only --relative --diff-filter=d HEAD -- ${dir}`;
+  const result =
+    await $`git --no-pager diff --name-only --relative --diff-filter=d ${commit} -- ${dir}`;
   let changedFiles = result.toString().trim().split('\n').filter(Boolean);
   if (excludePattern.length > 0) {
     changedFiles = changedFiles.filter((fileName) => !new RegExp(excludePattern).test(fileName));
   }
 
-  if (typeof cmd === 'string' && changedFiles.length > 0) {
+  if (changedFiles.length > 0) {
     if (cmd === 'echo') {
       echo(changedFiles.join('\n'));
     } else {
