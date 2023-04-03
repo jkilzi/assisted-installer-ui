@@ -25,6 +25,17 @@ module.exports = {
       },
     },
     {
+      env: {
+        browser: false,
+      },
+      extends: ['@openshift-assisted/eslint-config-assisted-ui'],
+      files: ['libs/toolbox/lib/**/*.ts'],
+      parserOptions: {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+      },
+    },
+    {
       extends: ['@openshift-assisted/eslint-config-assisted-ui'],
       files: ['libs/ui-lib/lib/**/*.{ts,tsx}'],
       parserOptions: {
