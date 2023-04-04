@@ -113,7 +113,7 @@
     "build": "yarn run -T tsc --build --verbose && yarn copy:css",
     "check_circular_deps": "yarn run -T dpdm --warning false --tree false --exit-code circular:1 ./lib/index.ts",
     "check_types": "yarn run -T tsc --noEmit",
-    "clean": "yarn run -T rimraf build .cache @types",
+    "clean": "yarn run -T rimraf node_modules build @types",
     "copy:css": "rsync -Ruv lib/./**/*.css build",
     "format": "yarn run -T toolbox changed 'yarn run -T prettier --check --'",
     "lint": "yarn run -T toolbox changed --dir=lib --excludePattern='(css|yaml)$' 'yarn run -T eslint --max-warnings=0'",
