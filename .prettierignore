@@ -1,5 +1,6 @@
 .yarnrc.yml
 .yarn
+.npm
 .vscode
 .idea
 apps/*/build
