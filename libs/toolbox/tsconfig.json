@@ -10,7 +10,7 @@
     "outDir": "build",
     "rootDir": "lib",
     "target": "ES6",
-    "tsBuildInfoFile": ".cache/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "node_modules/.cache/tsc/tsconfig.tsbuildinfo"
   },
   "include": ["lib"]
 }
