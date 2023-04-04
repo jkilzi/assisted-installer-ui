@@ -13,10 +13,5 @@
   "devDependencies": {
     "@types/eslint": "^8"
   },
-  "scripts": {
-    "clean": "yarn run -T rimraf node_modules",
-    "format": "yarn run -T prettier --check -- index.js",
-    "lint": "yarn run -T eslint --max-warnings=0 index.js"
-  },
   "version": "1.0.0"
 }
