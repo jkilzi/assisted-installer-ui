@@ -24,6 +24,7 @@
     "url": "https://github.com/openshift-assisted/assisted-ui-lib"
   },
   "scripts": {
+    "clean": "yarn run -T rimraf node_modules",
     "watch": "yarn run -T toolbox watch --dir=lib 'yalc push --changed'",
     "process_new_strings": "scripts/process-new-strings.sh",
     "format": "yarn run -T toolbox changed 'yarn run -T prettier --check --'",
