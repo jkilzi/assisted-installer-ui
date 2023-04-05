@@ -59,7 +59,7 @@
     },
     {
       "extends": ["@openshift-assisted/eslint-config-assisted-ui", "plugin:react/jsx-runtime"],
-      "files": ["apps/assisted-ui/src/**/*.{ts,tsx}"],
+      "files": ["apps/assisted-ui/src/**/*.{ts,tsx}", "apps/assisted-ui/vite.config.ts"],
       "parserOptions": {
         "tsconfigRootDir": "apps/assisted-ui",
         "EXPERIMENTAL_useSourceOfProjectReferenceRedirect": true
