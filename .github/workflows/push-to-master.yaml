@@ -1,4 +1,4 @@
-name: Push to master
+name: Push to master or release branches
 
 on:
   push:
@@ -16,6 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - run: |
+          echo ${{toJSON(github)}}
+          exit 1
       - name: Define AIUI_APP_VERSION
         run: |
           echo "AIUI_APP_VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
