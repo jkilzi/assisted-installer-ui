@@ -16,6 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - run: |
+          echo ${GITHUB_CONTEXT}
+          exit 1
       - name: Define AIUI_APP_VERSION
         run: |
           echo "AIUI_APP_VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
