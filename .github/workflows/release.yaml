@@ -1,0 +1,59 @@
+name: Release a new version
+
+on:
+  release:
+    types:
+      - published
+
+env:
+  NODE_OPTIONS: '--max-old-space-size=8192'
+
+jobs:
+  publish-to-npm:
+    if: ${{ endsWith(github.ref, "releases") }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configuring git
+        run: |
+          git config user.name '${{ github.actor }}'
+          git config user.email '${{ github.actor }}@users.noreply.github.com'
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: yarn
+          node-version: ${{ vars.NODEJS_VERSION }}
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build
+        run: yarn build:all
+
+      - name: Bump workspaces to ${{ github.ref_name }}
+        run: |
+          workspaces=(ui-lib locales assisted-ui)
+          for ws in $workspaces; do
+            yarn workspace @openshift-assisted/${ws} version ${GITHUB_REF_NAME:1} --deferred
+          done
+          yarn version apply --all
+
+      - name: Publish workspaces to NPM
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: |
+          yarn config set npmScopes.openshift-assisted.npmAuthToken $NPM_AUTH_TOKEN
+          workspaces=(ui-lib locales)
+          for ws in $workspaces; do
+            yarn workspace @openshift-assisted/${ws} npm publish
+          done
+
+      - name: Update the repo
+        run: |
+          git add libs/ui-lib/package.json libs/locales/package.json apps/assisted-ui/package.json
+          git commit -m 'Version ${{ github.ref_name }}'
+          git tag -f -a ${GITHUB_REF_NAME} -m '${GITHUB_REF_NAME}'
+          git push origin ${GITHUB_REF_NAME} --force
