@@ -1,0 +1,6 @@
+[allowlist]
+  description = "Global Allowlist"
+
+  pats = [
+    '''/.yarn/releases/yarn-\d+\.\d+\.\d+\.cjs''',
+  ]
