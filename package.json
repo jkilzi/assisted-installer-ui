@@ -13,11 +13,11 @@
     "vitest": "^0.34.5"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   },
   "license": "Apache-2.0",
   "name": "assisted-installer-ui",
-  "packageManager": "yarn@3.4.1",
+  "packageManager": "yarn@4.0.0",
   "private": true,
   "resolutions": {
     "@types/react": "<17.0.30",
@@ -26,21 +26,22 @@
   "scripts": {
     "_build:ui-lib": "yarn workspace @openshift-assisted/ui-lib build",
     "_yalc:push": "bash -c \"for lib in ui-lib types locales; do yalc push --changed libs/\\${lib}; done\"",
-    "build:all": "yarn workspaces foreach -v --topological-dev run build",
-    "check:circular_deps:all": "yarn workspaces foreach -vp run check_circular_deps",
+    "build:all": "yarn workspaces foreach -Av --topological-dev run build",
+    "check:circular_deps:all": "yarn workspaces foreach -Avp run check_circular_deps",
     "check:translation_files": "yarn workspace @openshift-assisted/locales run validate_translation_files",
-    "check:types:all": "yarn workspaces foreach -vp run check_types",
-    "clean:all": "yarn workspaces foreach -vp run clean && yarn rimraf node_modules",
-    "format:all": "yarn workspaces foreach -vp run format",
-    "lint:all": "yarn workspaces foreach -vp run lint",
-    "fix-code-style:all": "yarn workspaces foreach -vp run fix-code-style",
+    "check:types:all": "yarn workspaces foreach -Avp run check_types",
+    "clean:all": "yarn workspaces foreach -Avp run clean && yarn rimraf node_modules",
+    "format:all": "yarn workspaces foreach -Avp run format",
+    "fix-code-style:all": "yarn workspaces foreach -Avp run fix-code-style",
+    "lint:all": "yarn workspaces foreach -Avp run lint",
+    "setup": "cd .. && yarn global add yalc",
+    "start:assisted_ui": "yarn workspace @openshift-assisted/assisted-ui serve",
+    "start:watch_mode": "yarn build:all && yarn run -T toolbox watch --dir=libs/ui-lib --dir=libs/types --dir=libs/locales 'yarn _build:ui-lib' 'yarn _yalc:push'",
+    "start:vitest-ui": "vitest --ui",
     "test:open:dev": "yarn workspace @openshift-assisted/ui-lib-tests run cy:open:dev",
     "test:open": "yarn workspace @openshift-assisted/ui-lib-tests run cy:open",
     "test:run": "yarn workspace @openshift-assisted/ui-lib-tests run cy:run",
-    "test:unit": "yarn workspaces foreach -v run test",
-    "start:assisted_ui": "yarn workspace @openshift-assisted/assisted-ui serve",
-    "start:watch_mode": "yarn build:all && yarn run -T toolbox watch --dir=libs/ui-lib --dir=libs/types --dir=libs/locales 'yarn _build:ui-lib' 'yarn _yalc:push'",
-    "start:vitest-ui": "vitest --ui"
+    "test:unit": "yarn workspaces foreach -Av run test"
   },
   "type": "module",
   "workspaces": [
