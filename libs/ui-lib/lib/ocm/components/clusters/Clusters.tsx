@@ -1,5 +1,5 @@
 import React from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import {
   Button,
   ButtonVariant,
@@ -33,9 +33,8 @@ import {
   selectClusterTableRows,
 } from '../../store/slices/clusters/selectors';
 
-type ClustersProps = RouteComponentProps;
-
-const Clusters: React.FC<ClustersProps> = ({ history }) => {
+const Clusters: React.FC = () => {
+  const history = useHistory();
   const { LOADING, EMPTY, POLLING_ERROR, RELOADING } = ResourceUIState;
   const { addAlert } = useAlerts();
   const { t } = useTranslation();
@@ -98,13 +97,15 @@ const Clusters: React.FC<ClustersProps> = ({ history }) => {
     default:
       if (clusterRows.length === 0 && uiState.current === POLLING_ERROR) {
         return (
-          <PageSection variant={PageSectionVariants.light} isFilled>
-            <ErrorState title="Failed to fetch clusters." fetchData={fetchClusters} />
-          </PageSection>
+          <AlertsContextProvider>
+            <PageSection variant={PageSectionVariants.light} isFilled>
+              <ErrorState title="Failed to fetch clusters." fetchData={fetchClusters} />
+            </PageSection>
+          </AlertsContextProvider>
         );
       } else {
         return (
-          <>
+          <AlertsContextProvider>
             <ClusterBreadcrumbs />
             <PageSection variant={PageSectionVariants.light}>
               <TextContent>
@@ -123,16 +124,11 @@ const Clusters: React.FC<ClustersProps> = ({ history }) => {
                 }
               />
             )}
-          </>
+          </AlertsContextProvider>
         );
       }
   }
 };
+Clusters.displayName = 'ClustersPage';
 
-const ClustersPage: React.FC<RouteComponentProps> = (props) => (
-  <AlertsContextProvider>
-    <Clusters {...props} />
-  </AlertsContextProvider>
-);
-
-export default ClustersPage;
+export default Clusters;

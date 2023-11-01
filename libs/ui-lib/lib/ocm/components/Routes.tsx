@@ -1,17 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import { Clusters, ClusterPage, NewClusterPage } from './clusters';
 import type { FeatureListType } from '../../common/features/featureGate';
-import { routeBasePath } from '../config';
+import { routeBasePath, setRouteBasePath } from '../config';
 import { AssistedUILibVersion } from './ui';
 import { storeDay1 } from '../store';
 import { useFeatureDetection } from '../hooks/use-feature-detection';
 
-export const Routes: React.FC<{ allEnabledFeatures: FeatureListType }> = ({
+export const Routes: React.FC<{ allEnabledFeatures: FeatureListType; basePath?: string }> = ({
   allEnabledFeatures,
   children,
+  basePath = '/assisted-installer',
 }) => {
+  useEffect(() => {
+    setRouteBasePath(basePath);
+  }, [basePath]);
+
   useFeatureDetection(allEnabledFeatures);
 
   return (

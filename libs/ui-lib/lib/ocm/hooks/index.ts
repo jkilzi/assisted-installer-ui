@@ -5,3 +5,4 @@ export { default as useInfraEnvId } from './useInfraEnvId';
 export { default as usePullSecret } from './usePullSecret';
 export { default as useClusterPreflightRequirements } from './useClusterPreflightRequirements';
 export { default as useUISettings } from './useUISettings';
+export { useFeatureDetection } from './use-feature-detection';
